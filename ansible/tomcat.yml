@@ -1,0 +1,31 @@
+- name: Deploy Tomcat Application
+  hosts: all
+  tasks:
+  - name: Install tomcat application
+    yum:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+      - tomcat
+      - tomcat-admin-webapps.noarch
+      - tomcat-docs-webapp.noarch
+      - tomcat-javadoc.noarch
+      - tomcat-webapps.noarch
+
+  - name: start Tomcat Service
+    service:
+      name: tomcat
+      state: started
+      enabled: yes
+
+  - name: Copy war file
+    copy:
+      src: "{{ item }}"
+      dest: /usr/share/tomcat/webapps/
+      owner: tomcat
+      group: tomcat
+    with_fileglob: /var/lib/jenkins/workspace/Java-Tomcat-Docker/target/*.war
+
+  - name: Verify if app is deployed successfully
+    uri:
+      url: http://172.31.21.134:8080/myweb-0.0.5
